@@ -17,7 +17,7 @@
     "minimum-stability": "dev",
     "require": {
         "php": ">=7.0.0",
-        "digit-soft/re-action": "*"
+        "digit-soft/re-action-clients-pool": "*"
     },
     "require-dev": {},
     "autoload": {
