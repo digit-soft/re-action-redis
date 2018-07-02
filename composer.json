@@ -18,7 +18,8 @@
     "require": {
         "php": ">=7.0.0",
         "digit-soft/re-action": "*",
-        "digit-soft/re-action-clients-pool": "*"
+        "digit-soft/re-action-clients-pool": "*",
+        "clue/php-redis-react": "~2.2"
     },
     "require-dev": {},
     "autoload": {
