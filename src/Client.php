@@ -1,5 +1,5 @@
 <?php
-//TODO: Remove ComponentAutoloadInterface and init()
+
 namespace Reaction\Redis;
 
 use Clue\Redis\Protocol\Factory as ProtocolFactory;
@@ -7,7 +7,6 @@ use React\EventLoop\LoopInterface;
 use React\Promise\ExtendedPromiseInterface;
 use React\Socket\Connector;
 use Reaction\Base\Component;
-use Reaction\Base\ComponentAutoloadInterface;
 use Reaction\ClientsPool\Pool;
 use Reaction\ClientsPool\PoolInterface;
 use Reaction\Exceptions\InvalidArgumentException;
@@ -18,7 +17,7 @@ use Reaction\Helpers\Inflector;
  * Class Client
  * @package Reaction\Redis
  */
-class Client extends Component implements ComponentAutoloadInterface, RedisCommandsInterface
+class Client extends Component implements RedisCommandsInterface
 {
     use RedisCommandsExecutorTrait;
 
@@ -56,7 +55,7 @@ class Client extends Component implements ComponentAutoloadInterface, RedisComma
      * @var array List of available redis commands.
      * @see http://redis.io/commands
      */
-    public $redisCommands = [
+    public static $redisCommands = [
         'APPEND', // Append a value to a key
         'AUTH', // Authenticate to the server
         'BGREWRITEAOF', // Asynchronously rewrite the append-only file
@@ -274,11 +273,22 @@ class Client extends Component implements ComponentAutoloadInterface, RedisComma
     public function __call($name, $arguments)
     {
         $redisCommand = strtoupper(Inflector::camel2words($name, false));
-        if (in_array($redisCommand, $this->redisCommands)) {
+        if (in_array($redisCommand, static::$redisCommands)) {
             return $this->executeCommand($redisCommand, $arguments);
         } else {
             return parent::__call($name, $arguments);
         }
+    }
+
+    /**
+     * Execute commands in chain
+     * @return RedisChainExecution
+     */
+    public function chain()
+    {
+        $client = $this->getPool()->createClient(false);
+        $executor = new RedisChainExecution(['client' => $client]);
+        return $executor;
     }
 
     /**
@@ -298,7 +308,9 @@ class Client extends Component implements ComponentAutoloadInterface, RedisComma
      */
     protected function getClient()
     {
-        return $this->getPool()->getClient();
+        /** @var ClientConnection $client */
+        $client = $this->getPool()->getClient();
+        return $client;
     }
 
     /**

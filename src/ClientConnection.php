@@ -17,6 +17,7 @@ use Reaction\ClientsPool\PoolClientTrait;
 use Reaction\Helpers\Inflector;
 use Reaction\Promise\Deferred;
 use Reaction\Promise\ExtendedPromiseInterface;
+use Reaction\Promise\LazyPromise;
 use function Reaction\Promise\resolve;
 
 /**
@@ -147,6 +148,7 @@ class ClientConnection extends Component implements PoolClientInterface, RedisCo
         static $pubsAndSubs = array('subscribe', 'unsubscribe', 'psubscribe', 'punsubscribe');
 
         $this->changeQueueCountInc();
+        $this->changeState(static::CLIENT_POOL_STATE_BUSY);
 
         if ($this->ending) {
             $request->reject(new \RuntimeException('Connection closed'));
@@ -188,6 +190,19 @@ class ClientConnection extends Component implements PoolClientInterface, RedisCo
         });
 
         return $promise;
+    }
+
+    /**
+     * Execute command
+     * @param string $command
+     * @param array  $arguments
+     * @return ExtendedPromiseInterface
+     */
+    public function executeCommandLazy($command, $arguments)
+    {
+        return new LazyPromise(function() use ($command, $arguments) {
+            return $this->executeCommand($command, $arguments);
+        });
     }
 
     /**
@@ -272,7 +287,11 @@ class ClientConnection extends Component implements PoolClientInterface, RedisCo
     public function __call($name, $arguments)
     {
         $redisCommand = strtoupper(Inflector::camel2words($name, false));
-        return $this->executeCommand($redisCommand, $arguments);
+        if (in_array($redisCommand, Client::$redisCommands)) {
+            return $this->executeCommand($redisCommand, $arguments);
+        } else {
+            return parent::__call($name, $arguments);
+        }
     }
 
     /**
