@@ -46,8 +46,8 @@ class Client extends Component implements RedisCommandsInterface
      * @var array Default Pool config
      */
     public $poolConfigDefault = [
-        'clientTtl' => null,
-        'maxCount' => 30,
+        'clientTtl' => 40,
+        'maxCount' => 100,
         'maxQueueCount' => 10,
     ];
 
