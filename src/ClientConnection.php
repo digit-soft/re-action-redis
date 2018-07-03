@@ -14,6 +14,7 @@ use React\Stream\DuplexStreamInterface;
 use Reaction\Base\Component;
 use Reaction\ClientsPool\PoolClientInterface;
 use Reaction\ClientsPool\PoolClientTrait;
+use Reaction\Helpers\Inflector;
 use Reaction\Promise\Deferred;
 use Reaction\Promise\ExtendedPromiseInterface;
 use function Reaction\Promise\resolve;
@@ -255,6 +256,23 @@ class ClientConnection extends Component implements PoolClientInterface, RedisCo
         if ($this->ending && !$this->queue) {
             $this->close();
         }
+    }
+
+    /**
+     * Allows issuing all supported commands via magic methods.
+     *
+     * ```php
+     * $redis->hmset('test_collection', 'key1', 'val1', 'key2', 'val2')
+     * ```
+     *
+     * @param string $name name of the missing method to execute
+     * @param array $arguments method call arguments
+     * @return ExtendedPromiseInterface
+     */
+    public function __call($name, $arguments)
+    {
+        $redisCommand = strtoupper(Inflector::camel2words($name, false));
+        return $this->executeCommand($redisCommand, $arguments);
     }
 
     /**
