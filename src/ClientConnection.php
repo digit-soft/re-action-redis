@@ -371,4 +371,12 @@ class ClientConnection extends Component implements PoolClientInterface, RedisCo
 
         return resolve($promise);
     }
+
+    /**
+     * @inheritdoc
+     */
+    protected static function getClientIdPrefix()
+    {
+        return 'redis_';
+    }
 }
