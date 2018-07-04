@@ -1,6 +1,6 @@
 {
     "name": "digit-soft/re-action-redis",
-    "version": "0.3.3",
+    "version": "0.3.4",
     "description": "Redis integration for Re-action framework",
     "keywords": ["digit-soft", "reactphp", "re-action", "redis", "re-action redis"],
     "license": "MIT",

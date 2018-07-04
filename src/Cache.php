@@ -114,6 +114,15 @@ class Cache extends ExpiringCache implements ExpiringCacheInterface
     }
 
     /**
+     * @inheritdoc
+     */
+    public function flush()
+    {
+        return $this->redis->flushdb()
+            ->then(function() { return true; });
+    }
+
+    /**
      * Add tags entry(ies) for key
      * @param string   $key
      * @param string[] $tags
