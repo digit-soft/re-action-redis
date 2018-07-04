@@ -219,7 +219,10 @@ class Cache extends ExpiringCache implements ExpiringCacheInterface
     {
         return $this->redis->hget($this->tagsRedisKey, $tag)
             ->then(function($result) {
-                return !empty($result) ? $this->unserializeData($result) : [];
+                if (is_string($result)) {
+                    $result = $this->unserializeData($result);
+                }
+                return is_array($result) ? $result : [];
             })->otherwise(function() {
                 return [];
             });
